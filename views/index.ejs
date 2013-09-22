@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en" ng-app="bpd" data-framework="angularjs">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>bpd • HEADSeUp</title>
+		<link rel="stylesheet" href="css/base.css">
+		<style>[ng-cloak] { display: none; }</style>
+	</head>
+	<body ng-controller="bpdCtrl">
+
+    <section id="zip">
+      <header id="zip-header">
+        <h1>zip</h1>
+      </header>
+      <section id="zip-main" ng-cloak>
+        <form id="zip-form" ng-submit="setZip()">
+          <input id="new-zip" placeholder="Zip Code" ng-model="zip" autofocus>
+        </form>
+      </section>
+      <footer id="zip-footer" ng-cloak>
+        <!-- we could display location results here -->
+      </footer>
+    </section>
+
+    <section id="new-program">
+			<header id="new-program-header">
+				<h1>new-program</h1>
+			</header>
+			<section id="new-program-main" ng-cloak>
+				<form id="new-program-form" ng-submit="addProgram()">
+          <select ng-options="i as f for (i,f) in facility_types" ng-model="selection"></select>
+          <input id="sf" placeholder="Square Feet" ng-model="sf">
+          <button>new program</button>
+				</form>
+			</section>
+			<footer id="new-program-footer" ng-cloak>
+        <ul>
+        <li ng-repeat="program in programs">
+            <p>{{program.sf}}</p>
+            <p>{{program.facility_type}}</p>
+        </li>
+        </ul>
+			</footer>
+		</section>
+
+    <section id="charts">
+      <div id="chart"></div>
+
+    </section>
+
+    <!--- BEGIN FOOTER -->
+		<footer id="info">
+			<p>Credits:
+				<a href="http://www.awongh.com">akira</a>,
+				<a href="http://google.com">rory</a>
+			</p>
+		</footer>
+
+    <script src="http://d3js.org/d3.v3.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.js"></script>
+		<script src="js/app.js"></script>
+
+
+<script>
+
+function bpd3draw( obj ){
+
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var formatPercent = d3.format(".0%");
+
+var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1, 1);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .tickFormat(formatPercent);
+
+var svg = d3.select("#chart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+  x.domain(obj.map(function(d) { return d.cooling; }));
+  y.domain([0, d3.max(obj, function(d) { return d.eui_distribution.mean; })]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Frequency");
+
+  svg.selectAll(".bar")
+      .data(obj)
+    .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.cooling); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.eui_distribution.mean); })
+      .attr("height", function(d) { return height - y(d.eui_distribution.mean); });
+}
+
+</script>
+
+	</body>
+</html>
